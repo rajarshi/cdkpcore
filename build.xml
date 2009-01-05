@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="cdkpsearch" default="all">
+
+
+    <property file="build.props"/>
+    <!-- Uncomment the following property if no tests compilation is needed -->
+    <!--
+   <property name="skip.tests" value="true"/>
+    -->
+
+    <!-- Compiler options -->
+
+    <property name="compiler.debug" value="on"/>
+    <property name="compiler.generate.no.warnings" value="off"/>
+    <property name="compiler.args" value=""/>
+    <property name="compiler.max.memory" value="256m"/>
+    <patternset id="ignored.files">
+        <exclude name="**/CVS/**"/>
+        <exclude name="**/SCCS/**"/>
+        <exclude name="**/RCS/**"/>
+        <exclude name="**/rcs/**"/>
+        <exclude name="**/.DS_Store/**"/>
+        <exclude name="**/.svn/**"/>
+    </patternset>
+    <patternset id="compiler.resources">
+        <include name="**/?*.properties"/>
+        <include name="**/?*.xml"/>
+        <include name="**/?*.gif"/>
+        <include name="**/?*.png"/>
+        <include name="**/?*.jpeg"/>
+        <include name="**/?*.jpg"/>
+        <include name="**/?*.html"/>
+        <include name="**/?*.dtd"/>
+        <include name="**/?*.tld"/>
+    </patternset>
+
+    <!-- JDK definitions -->
+    <path id="jdk.classpath.jdk_1.5">
+        <fileset dir="${jdk.home.jdk_1.5}">
+            <include name="jre/lib/jce.jar"/>
+            <include name="jre/lib/charsets.jar"/>
+            <include name="jre/lib/jsse.jar"/>
+            <include name="jre/lib/plugin.jar"/>
+            <include name="jre/lib/javaws.jar"/>
+            <include name="jre/lib/rt.jar"/>
+            <include name="jre/lib/deploy.jar"/>
+            <include name="jre/lib/ext/sunpkcs11.jar"/>
+            <include name="jre/lib/ext/localedata.jar"/>
+            <include name="jre/lib/ext/sunjce_provider.jar"/>
+            <include name="jre/lib/ext/dnsns.jar"/>
+        </fileset>
+    </path>
+
+    <property name="project.jdk.home" value="${jdk.home.jdk_1.5}"/>
+    <property name="project.jdk.classpath" value="jdk.classpath.jdk_1.5"/>
+
+
+    <!-- Global Libraries -->
+
+    <path id="library.cdk_jars.classpath">
+        <fileset dir="${cdk.libs}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+    <path id="library.cdk_deps.classpath">
+        <fileset dir="${cdk.deps}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+
+    <!-- Modules -->
+
+
+    <!-- Module CDKPsearch -->
+
+    <dirname property="module.cdkpsearch.basedir" file="${ant.file}"/>
+
+    <property name="version" value="0.6"/>
+
+
+    <property name="module.jdk.home.cdkpsearch" value="${project.jdk.home}"/>
+    <property name="module.jdk.classpath.cdkpsearch" value="${project.jdk.classpath}"/>
+
+    <property name="compiler.args.cdkpsearch" value="${compiler.args}"/>
+
+    <property name="cdkpsearch.output.dir" value="${module.cdkpsearch.basedir}/classes"/>
+    <property name="cdkpsearch.testoutput.dir" value="${module.cdkpsearch.basedir}/classes"/>
+
+    <path id="cdkpsearch.module.bootclasspath">
+        <!-- Paths to be included in compilation bootclasspath -->
+    </path>
+
+    <path id="cdkpsearch.module.classpath">
+        <path refid="${module.jdk.classpath.cdkpsearch}"/>
+        <path refid="library.cdk_deps.classpath"/>
+        <path refid="library.cdk_jars.classpath"/>
+        <pathelement location="libs/CheckBoxTree.jar"/>
+    </path>
+
+
+    <patternset id="excluded.from.module.cdkpsearch">
+        <patternset refid="ignored.files"/>
+    </patternset>
+
+    <patternset id="excluded.from.compilation.cdkpsearch">
+        <patternset refid="excluded.from.module.cdkpsearch"/>
+    </patternset>
+
+    <path id="cdkpsearch.module.sourcepath">
+        <dirset dir="${module.cdkpsearch.basedir}">
+            <include name="src"/>
+        </dirset>
+    </path>
+
+
+    <target name="compile.module.cdkpsearch" depends="compile.module.cdkpsearch.production,compile.module.cdkpsearch.tests"
+            description="compile module(s) CDKPsearch"/>
+
+    <target name="compile.module.cdkpsearch.production" description="compile module(s) CDKPsearch production classes">
+        <mkdir dir="${cdkpsearch.output.dir}"/>
+        <javac destdir="${cdkpsearch.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}"
+               memoryMaximumSize="${compiler.max.memory}" fork="true"
+               executable="${module.jdk.home.cdkpsearch}/bin/javac">
+            <compilerarg line="${compiler.args.cdkpsearch}"/>
+            <bootclasspath refid="cdkpsearch.module.bootclasspath"/>
+            <classpath refid="cdkpsearch.module.classpath"/>
+            <src refid="cdkpsearch.module.sourcepath"/>
+        </javac>
+        <copy todir="${cdkpsearch.output.dir}">
+            <fileset dir="${module.cdkpsearch.basedir}/src">
+                <patternset refid="compiler.resources"/>
+                <type type="file"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="compile.module.cdkpsearch.tests" depends="compile.module.cdkpsearch.production"
+            description="compile module(s) CDKPsearch test classes" unless="skip.tests"/>
+
+    <target name="clean.module.cdkpsearch" description="cleanup module">
+      <delete dir="${cdkpsearch.output.dir}"/>
+      <delete dir="${cdkpsearch.testoutput.dir}"/>
+      <delete file="CDKPsearch.jar" />
+      <delete>
+	<fileset dir="." includes="*.tgz" />
+      </delete>
+    </target>
+
+    <target name="jar" description="Create JAR" depends="init, compile.module.cdkpsearch">
+        <unjar dest="${cdkpsearch.output.dir}" src="libs/CheckBoxTree.jar"/>
+        <jar jarfile="CDKPsearch.jar" basedir="${cdkpsearch.output.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="net.guha.apps.pcoresearch.PharmacophoreSearch"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="bigjar" description="Create a big JAR" depends="init, compile.module.cdkpsearch">
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-valencycheck.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-isomorphism.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-smiles.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-io.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-smarts.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-pcore.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-interfaces.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-data.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-core.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-standard.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-extra.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-nonotify.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-smiles.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-atomtype.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.deps}/jgrapht-0.6.0.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.deps}/vecmath1.2-1.14.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.deps}/xom-1.1.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.deps}/commons-cli-1.0.jar"/>
+        <jar jarfile="CDKPsearch.jar" basedir="${cdkpsearch.output.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="net.guha.apps.pcoresearch.PharmacophoreSearch" />
+            </manifest>
+        </jar>
+    </target>
+
+  <target name="perfjar" description="Create a big JAR" depends="init, compile.module.cdkpsearch">
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-valencycheck.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-isomorphism.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-smiles.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-io.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-smarts.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-pcore.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-interfaces.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-data.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-core.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-standard.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-extra.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-nonotify.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-smiles.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-atomtype.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.deps}/jgrapht-0.6.0.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.deps}/vecmath1.2-1.14.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.deps}/xom-1.1.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.deps}/commons-cli-1.0.jar"/>
+        <jar jarfile="CDKPsearch.jar" basedir="${cdkpsearch.output.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="net.guha.apps.pcoresearch.PharmacophoreSearchPerf" />
+            </manifest>
+        </jar>
+    </target>
+
+
+    <target name="release" description="Create and deploy distribution">
+      <antcall target="jar" />
+      <scp localfile="CDKPsearch.jar" 
+	   remoteTofile="rguha@${release.path}/CDKPsearchsmall.jar" 
+	   verbose="true"
+	   password="${password}"
+	   />
+      <antcall target="bigjar" />
+      <scp localfile="CDKPsearch.jar" 
+	   remoteTodir="rguha@${release.path}" 
+	   verbose="true"
+	   password="${password}"
+	   />
+      <antcall target="clean" />
+      <tar destfile="CDKPsearch-${version}.tgz"
+	   basedir="${module.cdkpsearch.basedir}"
+	   excludes="x*"
+	   compression="gzip" />
+      <scp localfile="CDKPsearch-${version}.tgz" 
+	   remoteTodir="rguha@${release.path}" 
+	   verbose="true"
+	   password="${password}"
+	   />
+    </target>
+
+    <target name="init" description="Build initialization">
+        <!-- Perform any build initialization in this target -->
+    </target>
+
+    <target name="clean" depends="clean.module.cdkpsearch" description="cleanup all"/>
+
+    <target name="all" depends="init, clean, compile.module.cdkpsearch" description="build all"/>
+</project>
