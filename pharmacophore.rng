@@ -2,8 +2,8 @@
 
 <!--
 Rajarshi Guha
-09/25/07
-rguha@indiana.edu
+05/01/2009
+rajarshi.guha@gmail.com
 -->
 
 
@@ -89,7 +89,8 @@ rguha@indiana.edu
 		lower value the constraint is exact and by specifying both the lower nd 
 		upper values one gets a distance range. The constraint
 		is defined between two pharmacophore groups so the contents of this 
-		element should 2 groupRef elements with the appropriate ID's, which should have been defined previously.
+		element should 2 groupRef elements with the appropriate ID's, which should have
+		been defined previously.
 	    </a:documentation>
 	    <attribute name="lower">
 		<data type="double" />
@@ -109,34 +110,55 @@ rguha@indiana.edu
 
     <define name="angleConstraintDef"
 	    datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
-	<element name="angleConstraint">
-	    <attribute name="value">
-		<data type="double" />
-	    </attribute>
-	    <attribute name="units">
-		<ref name="angleUnitsDef" />
-	    </attribute>
-	    <ref name="groupRefDef" />
-	    <ref name="groupRefDef" />
-	    <ref name="groupRefDef" />
-	</element>
+      <element name="angleConstraint">
+	<attribute name="lower">
+	  <data type="double" />
+	</attribute>
+	<optional>
+	  <attribute name="upper">
+	    <data type="double" />
+	  </attribute>
+	</optional>
+	<attribute name="units">
+	  <ref name="angleUnitsDef" />
+	</attribute>
+	<ref name="groupRefDef" />
+	<ref name="groupRefDef" />
+	<ref name="groupRefDef" />
+      </element>
     </define>
+
+    <define name="dirConstraintDef"
+	    datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+      <element name="dirConstraint">
+	<a:documentation>
+	  This element represents a directional constraint. While multiple such 
+	  constraints are possible, the common feature is to specify a direction.
+	  The direction can be specified by providing a unit vector, starting from
+	  the origin in the desired direction. This is represents an exact constraint.
+	  The element also allows the constraint to be relaxed by supporting an 
+	  optional solid angle specification.
+	</a:documentation>
+	<ref name="groupRefDef" />
+      </element>
+    </define>
+    
 
     <!-- A definition of unit symbols. I'm not sure whether this is the best 
-    way to go about this, since the strings A, nm, pm are conventions -->
+	 way to go about this, since the strings A, nm, pm are conventions -->
     <define name="distanceUnitsDef">
-	<choice>
-	    <value>A</value>
-	    <value>nm</value>
-	    <value>pm</value>
-	</choice>
+      <choice>
+	<value>A</value>
+	<value>nm</value>
+	<value>pm</value>
+      </choice>
     </define>
     <define name="angleUnitsDef">
-	<choice>
-	    <value>radians</value>
-	    <value>degrees</value>
-	</choice>
+      <choice>
+	<value>radians</value>
+	<value>degrees</value>
+      </choice>
     </define>
 
-	
-</grammar>
+    
+  </grammar>
