@@ -162,6 +162,7 @@
         <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-isomorphism.jar"/>
         <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-smiles.jar"/>
         <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-io.jar"/>
+        <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-ioformats.jar"/>
         <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-smarts.jar"/>
         <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-pcore.jar"/>
         <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-interfaces.jar"/>

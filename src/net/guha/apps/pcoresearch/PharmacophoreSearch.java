@@ -1,6 +1,12 @@
 package net.guha.apps.pcoresearch;
 
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.PosixParser;
 import org.openscience.cdk.CDKConstants;
 import org.openscience.cdk.ConformerContainer;
 import org.openscience.cdk.aromaticity.CDKHueckelAromaticityDetector;
@@ -10,15 +16,23 @@ import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
 import org.openscience.cdk.interfaces.IMolecule;
-import org.openscience.cdk.io.MDLWriter;
+import org.openscience.cdk.io.MDLV2000Writer;
 import org.openscience.cdk.io.iterator.IteratingMDLConformerReader;
 import org.openscience.cdk.io.iterator.IteratingMDLReader;
-import org.openscience.cdk.isomorphism.matchers.IQueryAtomContainer;
 import org.openscience.cdk.nonotify.NNMolecule;
 import org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder;
-import org.openscience.cdk.pharmacophore.*;
+import org.openscience.cdk.pharmacophore.PharmacophoreAngleBond;
+import org.openscience.cdk.pharmacophore.PharmacophoreAtom;
+import org.openscience.cdk.pharmacophore.PharmacophoreBond;
+import org.openscience.cdk.pharmacophore.PharmacophoreMatcher;
+import org.openscience.cdk.pharmacophore.PharmacophoreQuery;
+import org.openscience.cdk.pharmacophore.PharmacophoreUtils;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.List;
 
@@ -36,9 +50,9 @@ public class PharmacophoreSearch {
     private String qname = null;
 
     private BufferedWriter report = null;
-    private MDLWriter writer;
+    private MDLV2000Writer writer;
     private PharmacophoreMatcher matcher;
-    private static final String PCORE_VERSION = "0.95";
+    private static final String PCORE_VERSION = "0.96";
 
     DecimalFormat formatter = new DecimalFormat("0.00");
 
@@ -97,15 +111,15 @@ public class PharmacophoreSearch {
     }
 
     public void initialize() throws IOException, CDKException {
-        List<IQueryAtomContainer> queries = PharmacophoreUtils.readPharmacophoreDefinitions(qfilename);
+        List<PharmacophoreQuery> queries = PharmacophoreUtils.readPharmacophoreDefinitions(qfilename);
         if (queries.size() == 0) throw new CDKException("No queries found in " + getQfilename());
 
-        IQueryAtomContainer query = null;
+        PharmacophoreQuery query = null;
         if (qname == null) {
             query = queries.get(0);
             qname = (String) query.getProperty(CDKConstants.TITLE);
         } else {
-            for (IQueryAtomContainer q : queries) {
+            for (PharmacophoreQuery q : queries) {
                 String title = (String) q.getProperty(CDKConstants.TITLE);
                 if (title != null && title.equals(qname)) {
                     query = q;
@@ -117,7 +131,7 @@ public class PharmacophoreSearch {
             throw new CDKException("Query named '" + qname + "' was not found in " + qfilename);
 
         matcher = new PharmacophoreMatcher(query);
-        writer = new MDLWriter(new FileWriter(ofilename));
+        writer = new MDLV2000Writer(new FileWriter(ofilename));
         report = new BufferedWriter(new FileWriter("report.txt"));
         report.write("Serial\tTitle\tNconf\tNhit\n");
     }
@@ -162,7 +176,7 @@ public class PharmacophoreSearch {
                 // loop over each of the matched
                 for (List<PharmacophoreAtom> match : matches) {
                     for (PharmacophoreAtom patom : match) {
-                        IAtom pseudoAtom = NoNotificationChemObjectBuilder.getInstance().newAtom("Xe");
+                        IAtom pseudoAtom = NoNotificationChemObjectBuilder.getInstance().newInstance(IAtom.class, "Xe");
                         pseudoAtom.setPoint3d(patom.getPoint3d());
                         container.addAtom(pseudoAtom);
                     }
