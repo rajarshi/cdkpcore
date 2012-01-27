@@ -96,7 +96,7 @@
         <path refid="${module.jdk.classpath.cdkpsearch}"/>
         <path refid="library.cdk_deps.classpath"/>
         <path refid="library.cdk_jars.classpath"/>
-        <pathelement location="libs/CheckBoxTree.jar"/>
+        <!-- <pathelement location="libs/CheckBoxTree.jar"/> -->
     </path>
 
 
@@ -149,7 +149,7 @@
     </target>
 
     <target name="jar" description="Create JAR" depends="init, compile.module.cdkpsearch">
-        <unjar dest="${cdkpsearch.output.dir}" src="libs/CheckBoxTree.jar"/>
+        <!-- <unjar dest="${cdkpsearch.output.dir}" src="libs/CheckBoxTree.jar"/> -->
         <jar jarfile="CDKPsearch.jar" basedir="${cdkpsearch.output.dir}">
             <manifest>
                 <attribute name="Main-Class" value="net.guha.apps.pcoresearch.PharmacophoreSearch"/>
