@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="cdk-1.4.10.git">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../cdk/dist/jar/cdk-1.4.10.git.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/../cdk/src/main" />
+    </SOURCES>
+  </library>
+</component>

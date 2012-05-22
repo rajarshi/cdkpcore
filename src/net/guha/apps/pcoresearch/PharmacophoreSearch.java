@@ -53,7 +53,7 @@ public class PharmacophoreSearch {
     private BufferedWriter report = null;
     private MDLV2000Writer writer;
     private PharmacophoreMatcher matcher;
-    private static final String PCORE_VERSION = "0.97";
+    private static final String PCORE_VERSION = "1.0";
 
     DecimalFormat formatter = new DecimalFormat("0.00");
 
@@ -276,16 +276,19 @@ public class PharmacophoreSearch {
 
                     matcher.getMatchingPharmacophoreAtoms();
 
-                    // loop over each of the matched
+                    // loop over each of the matched and add dummy atoms (using Xe)
+                    // Note that the IAtomContainer object obtained from confContainer
+                    // should not be modified - hence we have to make a clone
+                    IAtomContainer confClone = (IAtomContainer) conf.clone();
                     List<List<PharmacophoreAtom>> matches = matcher.getUniqueMatchingPharmacophoreAtoms();
                     for (List<PharmacophoreAtom> match : matches) {
                         for (PharmacophoreAtom patom : match) {
                             IAtom pseudoAtom = NoNotificationChemObjectBuilder.getInstance().newInstance(IAtom.class, "Xe");
                             pseudoAtom.setPoint3d(patom.getPoint3d());
-                            conf.addAtom(pseudoAtom);
+                            confClone.addAtom(pseudoAtom);
                         }
                     }
-                    writer.writeMolecule(conf);
+                    writer.writeMolecule(confClone);
                 } catch (Exception e) {
                     throw new CDKException("ERROR: problem writing a hit to disk [title = " + confContainer.getTitle() + "]");
                 }
