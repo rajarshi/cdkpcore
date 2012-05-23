@@ -53,9 +53,14 @@
 
     <property name="project.jdk.home" value="${jdk.home.jdk_1.5}"/>
     <property name="project.jdk.classpath" value="jdk.classpath.jdk_1.5"/>
-
+    <property name="local.lib" value="lib/"/>
 
     <!-- Global Libraries -->
+    <path id="local.deps">
+        <fileset dir="${local.lib}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
 
     <path id="library.cdk_jars.classpath">
         <fileset dir="${cdk.libs}">
@@ -96,6 +101,7 @@
         <path refid="${module.jdk.classpath.cdkpsearch}"/>
         <path refid="library.cdk_deps.classpath"/>
         <path refid="library.cdk_jars.classpath"/>
+        <path refid="local.deps"/>
         <!-- <pathelement location="libs/CheckBoxTree.jar"/> -->
     </path>
 
@@ -115,7 +121,8 @@
     </path>
 
 
-    <target name="compile.module.cdkpsearch" depends="compile.module.cdkpsearch.production,compile.module.cdkpsearch.tests"
+    <target name="compile.module.cdkpsearch"
+            depends="compile.module.cdkpsearch.production,compile.module.cdkpsearch.tests"
             description="compile module(s) CDKPsearch"/>
 
     <target name="compile.module.cdkpsearch.production" description="compile module(s) CDKPsearch production classes">
@@ -134,22 +141,24 @@
                 <type type="file"/>
             </fileset>
         </copy>
+        <copy todir="${cdkpsearch.output.dir}" file="pharmacophore.rng"/>
     </target>
 
     <target name="compile.module.cdkpsearch.tests" depends="compile.module.cdkpsearch.production"
             description="compile module(s) CDKPsearch test classes" unless="skip.tests"/>
 
     <target name="clean.module.cdkpsearch" description="cleanup module">
-      <delete dir="${cdkpsearch.output.dir}"/>
-      <delete dir="${cdkpsearch.testoutput.dir}"/>
-      <delete file="CDKPsearch.jar" />
-      <delete>
-	<fileset dir="." includes="*.tgz" />
-      </delete>
+        <delete dir="${cdkpsearch.output.dir}"/>
+        <delete dir="${cdkpsearch.testoutput.dir}"/>
+        <delete file="CDKPsearch.jar"/>
+        <delete>
+            <fileset dir="." includes="*.tgz"/>
+        </delete>
     </target>
 
     <target name="jar" description="Create JAR" depends="init, compile.module.cdkpsearch">
         <!-- <unjar dest="${cdkpsearch.output.dir}" src="libs/CheckBoxTree.jar"/> -->
+        <unjar dest="${cdkpsearch.output.dir}" src="${local.lib}/jing.jar"/>
         <jar jarfile="CDKPsearch.jar" basedir="${cdkpsearch.output.dir}">
             <manifest>
                 <attribute name="Main-Class" value="net.guha.apps.pcoresearch.PharmacophoreSearch"/>
@@ -158,6 +167,7 @@
     </target>
 
     <target name="bigjar" description="Create a big JAR" depends="init, compile.module.cdkpsearch">
+        <unjar dest="${cdkpsearch.output.dir}" src="${local.lib}/jing.jar"/>
         <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-valencycheck.jar"/>
         <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-isomorphism.jar"/>
         <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-smiles.jar"/>
@@ -179,12 +189,13 @@
         <unjar dest="${cdkpsearch.output.dir}" src="${cdk.deps}/commons-cli-1.0.jar"/>
         <jar jarfile="CDKPsearch.jar" basedir="${cdkpsearch.output.dir}">
             <manifest>
-                <attribute name="Main-Class" value="net.guha.apps.pcoresearch.PharmacophoreSearch" />
+                <attribute name="Main-Class" value="net.guha.apps.pcoresearch.PharmacophoreSearch"/>
             </manifest>
         </jar>
     </target>
 
-  <target name="perfjar" description="Create a big JAR" depends="init, compile.module.cdkpsearch">
+    <target name="perfjar" description="Create a big JAR" depends="init, compile.module.cdkpsearch">
+        <unjar dest="${cdkpsearch.output.dir}" src="${local.lib}/jing.jar"/>
         <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-valencycheck.jar"/>
         <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-isomorphism.jar"/>
         <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-smiles.jar"/>
@@ -205,35 +216,35 @@
         <unjar dest="${cdkpsearch.output.dir}" src="${cdk.deps}/commons-cli-1.0.jar"/>
         <jar jarfile="CDKPsearch.jar" basedir="${cdkpsearch.output.dir}">
             <manifest>
-                <attribute name="Main-Class" value="net.guha.apps.pcoresearch.PharmacophoreSearchPerf" />
+                <attribute name="Main-Class" value="net.guha.apps.pcoresearch.PharmacophoreSearchPerf"/>
             </manifest>
         </jar>
     </target>
 
 
     <target name="release" description="Create and deploy distribution">
-      <antcall target="jar" />
-      <scp localfile="CDKPsearch.jar" 
-	   remoteTofile="rguha@${release.path}/CDKPsearchsmall.jar" 
-	   verbose="true"
-	   password="${password}"
-	   />
-      <antcall target="bigjar" />
-      <scp localfile="CDKPsearch.jar" 
-	   remoteTodir="rguha@${release.path}" 
-	   verbose="true"
-	   password="${password}"
-	   />
-      <antcall target="clean" />
-      <tar destfile="CDKPsearch-${version}.tgz"
-	   basedir="${module.cdkpsearch.basedir}"
-	   excludes="x*"
-	   compression="gzip" />
-      <scp localfile="CDKPsearch-${version}.tgz" 
-	   remoteTodir="rguha@${release.path}" 
-	   verbose="true"
-	   password="${password}"
-	   />
+        <antcall target="jar"/>
+        <scp localfile="CDKPsearch.jar"
+             remoteTofile="rguha@${release.path}/CDKPsearchsmall.jar"
+             verbose="true"
+             password="${password}"
+                />
+        <antcall target="bigjar"/>
+        <scp localfile="CDKPsearch.jar"
+             remoteTodir="rguha@${release.path}"
+             verbose="true"
+             password="${password}"
+                />
+        <antcall target="clean"/>
+        <tar destfile="CDKPsearch-${version}.tgz"
+             basedir="${module.cdkpsearch.basedir}"
+             excludes="x*"
+             compression="gzip"/>
+        <scp localfile="CDKPsearch-${version}.tgz"
+             remoteTodir="rguha@${release.path}"
+             verbose="true"
+             password="${password}"
+                />
     </target>
 
     <target name="init" description="Build initialization">

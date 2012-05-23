@@ -8,6 +8,7 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="cdk-1.4.10.git" level="project" />
+    <orderEntry type="library" name="jing" level="project" />
   </component>
 </module>
 

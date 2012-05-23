@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="jing">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/jing.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
