@@ -53,7 +53,7 @@ public class PharmacophoreSearch {
     private BufferedWriter report = null;
     private MDLV2000Writer writer;
     private PharmacophoreMatcher matcher;
-    private static final String PCORE_VERSION = "1.1";
+    private static final String PCORE_VERSION = "1.2";
 
     DecimalFormat formatter = new DecimalFormat("0.00");
 
@@ -353,6 +353,10 @@ public class PharmacophoreSearch {
                 .hasArg()
                 .withDescription("The query XML file to validate. Currently does not check for incorrect SMARTS definitions")
                 .create("validate"));
+        options.addOption(OptionBuilder.withLongOpt("align").withArgName("method")
+                .hasArg()
+                .withDescription("If specified, hits are aligned using one of the following algorithms: first, jvd")
+                .create("align"));
 
 
         CommandLine line = null;

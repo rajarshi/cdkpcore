@@ -81,21 +81,11 @@
     <!-- Module CDKPsearch -->
 
     <dirname property="module.cdkpsearch.basedir" file="${ant.file}"/>
-
-    <property name="version" value="0.6"/>
-
-
     <property name="module.jdk.home.cdkpsearch" value="${project.jdk.home}"/>
     <property name="module.jdk.classpath.cdkpsearch" value="${project.jdk.classpath}"/>
 
-    <property name="compiler.args.cdkpsearch" value="${compiler.args}"/>
-
     <property name="cdkpsearch.output.dir" value="${module.cdkpsearch.basedir}/classes"/>
     <property name="cdkpsearch.testoutput.dir" value="${module.cdkpsearch.basedir}/classes"/>
-
-    <path id="cdkpsearch.module.bootclasspath">
-        <!-- Paths to be included in compilation bootclasspath -->
-    </path>
 
     <path id="cdkpsearch.module.classpath">
         <path refid="${module.jdk.classpath.cdkpsearch}"/>
@@ -120,18 +110,9 @@
         </dirset>
     </path>
 
-
-    <target name="compile.module.cdkpsearch"
-            depends="compile.module.cdkpsearch.production,compile.module.cdkpsearch.tests"
-            description="compile module(s) CDKPsearch"/>
-
-    <target name="compile.module.cdkpsearch.production" description="compile module(s) CDKPsearch production classes">
+    <target name="compile" description="compile module(s) CDKPsearch production classes">
         <mkdir dir="${cdkpsearch.output.dir}"/>
-        <javac destdir="${cdkpsearch.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}"
-               memoryMaximumSize="${compiler.max.memory}" fork="true"
-               executable="${module.jdk.home.cdkpsearch}/bin/javac">
-            <compilerarg line="${compiler.args.cdkpsearch}"/>
-            <bootclasspath refid="cdkpsearch.module.bootclasspath"/>
+        <javac destdir="${cdkpsearch.output.dir}" fork="true" executable="${module.jdk.home.cdkpsearch}/bin/javac">
             <classpath refid="cdkpsearch.module.classpath"/>
             <src refid="cdkpsearch.module.sourcepath"/>
         </javac>
@@ -144,10 +125,7 @@
         <copy todir="${cdkpsearch.output.dir}" file="pharmacophore.rng"/>
     </target>
 
-    <target name="compile.module.cdkpsearch.tests" depends="compile.module.cdkpsearch.production"
-            description="compile module(s) CDKPsearch test classes" unless="skip.tests"/>
-
-    <target name="clean.module.cdkpsearch" description="cleanup module">
+    <target name="clean" description="cleanup module">
         <delete dir="${cdkpsearch.output.dir}"/>
         <delete dir="${cdkpsearch.testoutput.dir}"/>
         <delete file="CDKPsearch.jar"/>
@@ -156,7 +134,7 @@
         </delete>
     </target>
 
-    <target name="jar" description="Create JAR" depends="init, compile.module.cdkpsearch">
+    <target name="jar" description="Create JAR" depends="init, compile">
         <!-- <unjar dest="${cdkpsearch.output.dir}" src="libs/CheckBoxTree.jar"/> -->
         <unjar dest="${cdkpsearch.output.dir}" src="${local.lib}/jing.jar"/>
         <jar jarfile="CDKPsearch.jar" basedir="${cdkpsearch.output.dir}">
@@ -166,7 +144,7 @@
         </jar>
     </target>
 
-    <target name="bigjar" description="Create a big JAR" depends="init, compile.module.cdkpsearch">
+    <target name="bigjar" description="Create a big JAR" depends="init, compile">
         <unjar dest="${cdkpsearch.output.dir}" src="${local.lib}/jing.jar"/>
         <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-valencycheck.jar"/>
         <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-isomorphism.jar"/>
@@ -194,7 +172,7 @@
         </jar>
     </target>
 
-    <target name="perfjar" description="Create a big JAR" depends="init, compile.module.cdkpsearch">
+    <target name="perfjar" description="Create a big JAR" depends="init, compile">
         <unjar dest="${cdkpsearch.output.dir}" src="${local.lib}/jing.jar"/>
         <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-valencycheck.jar"/>
         <unjar dest="${cdkpsearch.output.dir}" src="${cdk.libs}/cdk-isomorphism.jar"/>
@@ -251,7 +229,6 @@
         <!-- Perform any build initialization in this target -->
     </target>
 
-    <target name="clean" depends="clean.module.cdkpsearch" description="cleanup all"/>
 
-    <target name="all" depends="init, clean, compile.module.cdkpsearch" description="build all"/>
+    <target name="all" depends="init, clean, compile" description="build all"/>
 </project>
