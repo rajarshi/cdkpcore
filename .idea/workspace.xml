@@ -2,11 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2f744f9f-9174-4dc1-8ab7-559b35c82323" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/jing.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/net/guha/apps/pcoresearch/ValidateQuery.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Cdkpcore.iml" afterPath="$PROJECT_DIR$/Cdkpcore.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build.xml" afterPath="$PROJECT_DIR$/build.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/net/guha/apps/pcoresearch/PharmacophoreSearch.java" afterPath="$PROJECT_DIR$/src/net/guha/apps/pcoresearch/PharmacophoreSearch.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/net/guha/apps/pcoresearch/ValidateQuery.java" afterPath="$PROJECT_DIR$/src/net/guha/apps/pcoresearch/ValidateQuery.java" />
     </list>
     <ignored path="cdkpcore.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -64,28 +62,19 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="build.xml" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="build.xml" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/build.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="235" column="76" selection-start="10652" selection-end="10652" vertical-scroll-proportion="0.9669967">
+            <state line="181" column="57" selection-start="7371" selection-end="7371" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="build.props" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/build.props">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="PharmacophoreSearch.java" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="PharmacophoreSearch.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/net/guha/apps/pcoresearch/PharmacophoreSearch.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="236" column="86" selection-start="9022" selection-end="9022" vertical-scroll-proportion="0.0">
+            <state line="55" column="52" selection-start="2163" selection-end="2163" vertical-scroll-proportion="0.90759075">
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -93,19 +82,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="pharmacophore.rng" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/pharmacophore.rng">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="73" column="0" selection-start="1864" selection-end="1864" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="ValidateQuery.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/net/guha/apps/pcoresearch/ValidateQuery.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="44" column="58" selection-start="1704" selection-end="1704" vertical-scroll-proportion="0.0">
+            <state line="58" column="9" selection-start="2252" selection-end="2252" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -138,9 +118,9 @@
     <option name="changedFiles">
       <list>
         <option value="$PROJECT_DIR$/data/d1.xml" />
-        <option value="$PROJECT_DIR$/src/net/guha/apps/pcoresearch/PharmacophoreSearch.java" />
-        <option value="$PROJECT_DIR$/src/net/guha/apps/pcoresearch/ValidateQuery.java" />
         <option value="$PROJECT_DIR$/build.xml" />
+        <option value="$PROJECT_DIR$/src/net/guha/apps/pcoresearch/ValidateQuery.java" />
+        <option value="$PROJECT_DIR$/src/net/guha/apps/pcoresearch/PharmacophoreSearch.java" />
       </list>
     </option>
   </component>
@@ -529,35 +509,42 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/net/guha/apps/pcoresearch/PharmacophoreSearch.java">
+    <entry file="file://$PROJECT_DIR$/build.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="236" column="86" selection-start="9022" selection-end="9022" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
+        <state line="181" column="57" selection-start="7371" selection-end="7371" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home/../Classes/classes.jar!/javax/xml/validation/SchemaFactory.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="34" column="39" selection-start="1888" selection-end="1888" vertical-scroll-proportion="0.5445545">
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/pharmacophore.rng">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="73" column="0" selection-start="1864" selection-end="1864" vertical-scroll-proportion="0.0">
+        <state line="73" column="0" selection-start="1864" selection-end="1864" vertical-scroll-proportion="1.2046205">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/net/guha/apps/pcoresearch/ValidateQuery.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="44" column="58" selection-start="1704" selection-end="1704" vertical-scroll-proportion="0.0">
+        <state line="58" column="9" selection-start="2252" selection-end="2252" vertical-scroll-proportion="0.0">
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/build.xml">
+    <entry file="file://$PROJECT_DIR$/src/net/guha/apps/pcoresearch/PharmacophoreSearch.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="235" column="76" selection-start="10652" selection-end="10652" vertical-scroll-proportion="0.9669967">
-          <folding />
+        <state line="55" column="52" selection-start="2163" selection-end="2163" vertical-scroll-proportion="0.90759075">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

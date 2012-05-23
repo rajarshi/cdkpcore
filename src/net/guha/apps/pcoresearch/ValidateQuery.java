@@ -9,6 +9,7 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Validate an XML pharmacophore definition file.
@@ -21,6 +22,25 @@ import java.io.IOException;
 public class ValidateQuery {
     javax.xml.validation.Validator validator;
 
+    /**
+     * Create validator using built in RelaxNG schema definition.
+     *
+     * @throws SAXException
+     */
+    public ValidateQuery() throws SAXException {
+        System.setProperty(SchemaFactory.class.getName() + ":" + XMLConstants.RELAXNG_NS_URI, "com.thaiopensource.relaxng.jaxp.XMLSyntaxSchemaFactory");
+        SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.RELAXNG_NS_URI);
+        InputStream is = getClass().getResourceAsStream("/pharmacophore.rng");
+        Schema schema = factory.newSchema(new StreamSource(is));
+        validator = schema.newValidator();
+    }
+
+    /**
+     * Create validator using supplied RelaxNG schema definition.
+     *
+     * @param schemaFileName The file name of the schema
+     * @throws SAXException
+     */
     public ValidateQuery(String schemaFileName) throws SAXException {
         System.setProperty(SchemaFactory.class.getName() + ":" + XMLConstants.RELAXNG_NS_URI, "com.thaiopensource.relaxng.jaxp.XMLSyntaxSchemaFactory");
         SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.RELAXNG_NS_URI);
@@ -35,9 +55,8 @@ public class ValidateQuery {
             validator.validate(source);
             return true;
         } catch (SAXException ex) {
-            System.out.println(ex.getMessage());
+            throw new SAXException(ex.getMessage());
         }
-        return false;
     }
 
     public static void main(String[] args) throws IOException, SAXException {

@@ -16,7 +16,6 @@ import org.openscience.cdk.geometry.GeometryTools;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
-import org.openscience.cdk.interfaces.IMolecule;
 import org.openscience.cdk.io.MDLV2000Writer;
 import org.openscience.cdk.io.iterator.IteratingMDLConformerReader;
 import org.openscience.cdk.io.iterator.IteratingMDLReader;
@@ -28,6 +27,7 @@ import org.openscience.cdk.pharmacophore.PharmacophoreBond;
 import org.openscience.cdk.pharmacophore.PharmacophoreMatcher;
 import org.openscience.cdk.pharmacophore.PharmacophoreQuery;
 import org.openscience.cdk.pharmacophore.PharmacophoreUtils;
+import org.xml.sax.SAXException;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -53,7 +53,7 @@ public class PharmacophoreSearch {
     private BufferedWriter report = null;
     private MDLV2000Writer writer;
     private PharmacophoreMatcher matcher;
-    private static final String PCORE_VERSION = "1.0";
+    private static final String PCORE_VERSION = "1.1";
 
     DecimalFormat formatter = new DecimalFormat("0.00");
 
@@ -349,6 +349,10 @@ public class PharmacophoreSearch {
                         " a query by its name field. If this argument" +
                         " is not provided the first query in the file is used")
                 .create("qname"));
+        options.addOption(OptionBuilder.withLongOpt("validate").withArgName("file")
+                .hasArg()
+                .withDescription("The query XML file to validate. Currently does not check for incorrect SMARTS definitions")
+                .create("validate"));
 
 
         CommandLine line = null;
@@ -369,6 +373,20 @@ public class PharmacophoreSearch {
 
         boolean annotate = false;
         boolean useConfs = false;
+
+        if (line.hasOption("validate")) {
+            String qfilename = line.getOptionValue("validate");
+            try {
+                ValidateQuery vq = new ValidateQuery();
+                if (vq.validate(qfilename)) {
+                    System.out.println("INFO: " + qfilename + " is a valid query file");
+                }
+            } catch (SAXException e) {
+                System.out.println("ERROR: " + qfilename + " is an invalid query file");
+                System.out.println("  " + e.getMessage());
+            }
+            System.exit(0);
+        }
 
         if (line.hasOption("version") || line.hasOption("V")) {
             System.out.println("CDKPSearch version = " + PCORE_VERSION + " JRE " + System.getProperty("java.version") + " CDK " + CDK.getVersion());
