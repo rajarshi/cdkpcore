@@ -1,49 +1,37 @@
 package net.guha.apps.pcoresearch;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
-import org.openscience.cdk.CDK;
+import org.apache.commons.cli.*;
 import org.openscience.cdk.CDKConstants;
 import org.openscience.cdk.ConformerContainer;
-import org.openscience.cdk.aromaticity.CDKHueckelAromaticityDetector;
+import org.openscience.cdk.DefaultChemObjectBuilder;
+import org.openscience.cdk.aromaticity.Aromaticity;
+import org.openscience.cdk.aromaticity.ElectronDonation;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.geometry.GeometryTools;
+import org.openscience.cdk.graph.Cycles;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
 import org.openscience.cdk.io.MDLV2000Writer;
 import org.openscience.cdk.io.iterator.IteratingMDLConformerReader;
-import org.openscience.cdk.io.iterator.IteratingMDLReader;
-import org.openscience.cdk.nonotify.NNMolecule;
-import org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder;
-import org.openscience.cdk.pharmacophore.PharmacophoreAngleBond;
-import org.openscience.cdk.pharmacophore.PharmacophoreAtom;
-import org.openscience.cdk.pharmacophore.PharmacophoreBond;
-import org.openscience.cdk.pharmacophore.PharmacophoreMatcher;
-import org.openscience.cdk.pharmacophore.PharmacophoreQuery;
-import org.openscience.cdk.pharmacophore.PharmacophoreUtils;
-import org.xml.sax.SAXException;
+import org.openscience.cdk.io.iterator.IteratingSDFReader;
+import org.openscience.cdk.pharmacophore.*;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Rajarshi Guha
  */
-public class PharmacophoreSearch {
+public class PharmacophoreSearchPerf {
     private boolean verbose = false;
     private boolean details = false;
     private boolean annotate = false;
+    private boolean performance = false;
+
+    private List<Double> matchTimes;
 
     private String ofilename = null;
     private String ifilename = null;
@@ -53,9 +41,17 @@ public class PharmacophoreSearch {
     private BufferedWriter report = null;
     private MDLV2000Writer writer;
     private PharmacophoreMatcher matcher;
-    private static final String PCORE_VERSION = "1.2";
+    private static final String PCORE_VERSION = "0.96";
 
     DecimalFormat formatter = new DecimalFormat("0.00");
+
+    public boolean isPerformance() {
+        return performance;
+    }
+
+    public void setPerformance(boolean performance) {
+        this.performance = performance;
+    }
 
     public String getQname() {
         return qname;
@@ -138,8 +134,14 @@ public class PharmacophoreSearch {
     }
 
     public void doSingleSearch() throws IOException, CDKException {
-        IteratingMDLReader reader = new IteratingMDLReader(
-                new FileReader(new File(ifilename)), NoNotificationChemObjectBuilder.getInstance()
+
+        long matchStart;
+        long matchEnd;
+
+        if (performance) matchTimes = new ArrayList<Double>();
+
+        IteratingSDFReader reader = new IteratingSDFReader(
+                new FileReader(new File(ifilename)), DefaultChemObjectBuilder.getInstance()
         );
 
         int nmol = 0;
@@ -149,18 +151,31 @@ public class PharmacophoreSearch {
         long timeStart = System.currentTimeMillis();
 
         while (reader.hasNext()) {
-            NNMolecule container = (NNMolecule) reader.next();
+            IAtomContainer container = reader.next();
 
             if (!GeometryTools.has3DCoordinates(container)) {
                 nskip++;
                 continue;
             }
 
-            CDKHueckelAromaticityDetector.detectAromaticity(container);
+            try {
+                Aromaticity aromaticity = new Aromaticity(ElectronDonation.daylight(),
+                        Cycles.vertexShort());
+                aromaticity.apply(container);
+            } catch (CDKException e) {
+                throw new CDKException("Error in aromaticity detection");
+            }
 
             boolean matched;
             try {
+                matchStart = (long) 0.0;
+                if (performance) matchStart = System.currentTimeMillis();
                 matched = matcher.matches(container);
+                if (performance) {
+                    matchEnd = System.currentTimeMillis();
+                    matchTimes.add((double) (matchEnd - matchStart));
+                }
+
             } catch (CDKException e) {
                 nskip++;
                 continue;
@@ -177,7 +192,7 @@ public class PharmacophoreSearch {
                 // loop over each of the matched
                 for (List<PharmacophoreAtom> match : matches) {
                     for (PharmacophoreAtom patom : match) {
-                        IAtom pseudoAtom = NoNotificationChemObjectBuilder.getInstance().newInstance(IAtom.class, "Xe");
+                        IAtom pseudoAtom = DefaultChemObjectBuilder.getInstance().newInstance(IAtom.class, "Xe");
                         pseudoAtom.setPoint3d(patom.getPoint3d());
                         container.addAtom(pseudoAtom);
                     }
@@ -235,11 +250,23 @@ public class PharmacophoreSearch {
                     formatter.format(avg) + " s/mol] " +
                     "and got " + nhit + " hits");
         }
+        if (performance) {
+            double matchAvg = 0.0;
+            for (Double d : matchTimes) matchAvg += d;
+            matchAvg /= (double) matchTimes.size();
+            System.out.println("INFO: Average time for matching is " + formatter.format(matchAvg) + " ms/mol");
+        }
     }
 
     public void doConfSearch() throws IOException, CDKException {
+
+        long matchStart;
+        long matchEnd;
+
+        if (performance) matchTimes = new ArrayList<Double>();
+
         IteratingMDLConformerReader reader = new IteratingMDLConformerReader(
-                new FileReader(new File(ifilename)), NoNotificationChemObjectBuilder.getInstance()
+                new FileReader(new File(ifilename)), DefaultChemObjectBuilder.getInstance()
         );
 
 
@@ -258,37 +285,40 @@ public class PharmacophoreSearch {
             // the arom detection on it should set it for all
             // other conformers in the container
             IAtomContainer tmp = confContainer.get(0);
-            CDKHueckelAromaticityDetector.detectAromaticity(tmp);
+            try {
+                Aromaticity aromaticity = new Aromaticity(ElectronDonation.daylight(),
+                        Cycles.vertexShort());
+                aromaticity.apply(tmp);
+            } catch (CDKException e) {
+                throw new CDKException("Error in aromaticity detection");
+            }
 
             boolean firstTime = true;
             int confhits = 0;
             for (IAtomContainer conf : confContainer) {
-                boolean status;
+                boolean status = false;
                 if (firstTime) {
+                    matchStart = (long) 0.0;
+                    if (performance) matchStart = System.currentTimeMillis();
                     status = matcher.matches(conf, true);
+                    if (performance) {
+                        matchEnd = System.currentTimeMillis();
+                        matchTimes.add((double) (matchEnd - matchStart));
+                    }
                     firstTime = false;
                 } else {
+                    matchStart = (long) 0.0;
+                    if (performance) matchStart = System.currentTimeMillis();
                     status = matcher.matches(conf, false);
+                    if (performance) {
+                        matchEnd = System.currentTimeMillis();
+                        matchTimes.add((double) (matchEnd - matchStart));
+                    }
                 }
                 if (status) try {
                     nhit++;
                     confhits++;
-
-                    matcher.getMatchingPharmacophoreAtoms();
-
-                    // loop over each of the matched and add dummy atoms (using Xe)
-                    // Note that the IAtomContainer object obtained from confContainer
-                    // should not be modified - hence we have to make a clone
-                    IAtomContainer confClone = (IAtomContainer) conf.clone();
-                    List<List<PharmacophoreAtom>> matches = matcher.getUniqueMatchingPharmacophoreAtoms();
-                    for (List<PharmacophoreAtom> match : matches) {
-                        for (PharmacophoreAtom patom : match) {
-                            IAtom pseudoAtom = NoNotificationChemObjectBuilder.getInstance().newInstance(IAtom.class, "Xe");
-                            pseudoAtom.setPoint3d(patom.getPoint3d());
-                            confClone.addAtom(pseudoAtom);
-                        }
-                    }
-                    writer.writeMolecule(confClone);
+                    writer.writeMolecule(conf);
                 } catch (Exception e) {
                     throw new CDKException("ERROR: problem writing a hit to disk [title = " + confContainer.getTitle() + "]");
                 }
@@ -310,6 +340,12 @@ public class PharmacophoreSearch {
                     formatter.format(avg) + " s/mol] " +
                     "and got " + nhit + " hits");
         }
+        if (performance) {
+            double matchAvg = 0.0;
+            for (Double d : matchTimes) matchAvg += d;
+            matchAvg /= (double) matchTimes.size();
+            System.out.println("INFO: Average time for matching is " + formatter.format(matchAvg) + " ms/conf");
+        }
     }
 
     public boolean isVerbose() {
@@ -321,6 +357,7 @@ public class PharmacophoreSearch {
         Options options = new Options();
         options.addOption("h", "help", false, "Print this message");
         options.addOption("v", "verbose", false, "Verbose output");
+        options.addOption("p", "perf", false, "Performance timing output");
         options.addOption("a", "annotate", false, "Annotates the output SD file with pharmacophore groups." +
                 " The result is that the each molecule in the hit file will have pseudo atoms" +
                 " representing the pharmacophore groups that match the query. " +
@@ -332,8 +369,9 @@ public class PharmacophoreSearch {
         options.addOption("c", "conf", false, "Input file is conformer data. If this is the" +
                 " case then the conformers for a given molecule should be contiguous and have the same" +
                 " title. Currently conformer detection by isomorphism is not supported");
-        options.addOption(OptionBuilder.withLongOpt("sdfile").withArgName("file").hasArg().withDescription("Input file. Can be a set of unique molecules or a " +
-                "collection of conformers for a set of molecules")
+        options.addOption(OptionBuilder.withLongOpt("sdfile").withArgName("file")
+                .hasArg()
+                .withDescription("Input file. Can be a set of unique molecules or multiple conformers for a collection of molecules")
                 .create("sdfile"));
         options.addOption(OptionBuilder.withLongOpt("ofile").withArgName("file")
                 .hasArg()
@@ -349,14 +387,6 @@ public class PharmacophoreSearch {
                         " a query by its name field. If this argument" +
                         " is not provided the first query in the file is used")
                 .create("qname"));
-        options.addOption(OptionBuilder.withLongOpt("validate").withArgName("file")
-                .hasArg()
-                .withDescription("The query XML file to validate. Currently does not check for incorrect SMARTS definitions")
-                .create("validate"));
-        options.addOption(OptionBuilder.withLongOpt("align").withArgName("method")
-                .hasArg()
-                .withDescription("If specified, hits are aligned using one of the following algorithms: first, jvd")
-                .create("align"));
 
 
         CommandLine line = null;
@@ -366,34 +396,17 @@ public class PharmacophoreSearch {
         } catch (ParseException exception) {
             System.err.println("Unexpected exception: " + exception.toString());
             HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp("\njava -jar CDKPsearch.jar",
-                    "Pharmacophore searching based on the CDK. The code currently handles distances and angle constraints. Pharmacophore queries can be provided in the form of XML definition files\n\n" +
-                            "Rajarshi Guha <rguha@indiana.edu>\n",
-                    options, "");
+            formatter.printHelp("\njava -jar CDKPsearch.jar", "blah", options, "bloh");
             System.exit(-1);
         }
 
-        PharmacophoreSearch ps = new PharmacophoreSearch();
+        PharmacophoreSearchPerf ps = new PharmacophoreSearchPerf();
 
         boolean annotate = false;
         boolean useConfs = false;
 
-        if (line.hasOption("validate")) {
-            String qfilename = line.getOptionValue("validate");
-            try {
-                ValidateQuery vq = new ValidateQuery();
-                if (vq.validate(qfilename)) {
-                    System.out.println("INFO: " + qfilename + " is a valid query file");
-                }
-            } catch (SAXException e) {
-                System.out.println("ERROR: " + qfilename + " is an invalid query file");
-                System.out.println("  " + e.getMessage());
-            }
-            System.exit(0);
-        }
-
         if (line.hasOption("version") || line.hasOption("V")) {
-            System.out.println("CDKPSearch version = " + PCORE_VERSION + " JRE " + System.getProperty("java.version") + " CDK " + CDK.getVersion());
+            System.out.println("CDKPSearch version = " + PCORE_VERSION + " JDK 1.5 CDK SVN rev 11546");
             System.exit(-1);
         }
 
@@ -403,6 +416,7 @@ public class PharmacophoreSearch {
         }
 
         if (line.hasOption("verbose") || line.hasOption("v")) ps.setVerbose(true);
+        if (line.hasOption("perf") || line.hasOption("p")) ps.setPerformance(true);
         if (line.hasOption("conf") || line.hasOption("c")) useConfs = true;
         if (line.hasOption("sdfile")) ps.setIfilename(line.getOptionValue("sdfile"));
         if (line.hasOption("ofile")) ps.setOfilename(line.getOptionValue("ofile"));

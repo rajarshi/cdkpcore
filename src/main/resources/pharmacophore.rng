@@ -1,0 +1,164 @@
+<?xml version="1.0" ?>
+
+<!--
+Rajarshi Guha
+05/01/2009
+rajarshi.guha@gmail.com
+-->
+
+
+<grammar xmlns="http://relaxng.org/ns/structure/1.0"
+	 xmlns:a="http://relaxng.org/ns/annotation/1.0"
+	 datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+
+    <start>
+	<element name="pharmacophoreContainer">
+	    <a:documentation>
+		A container for multiple pharmacophore definitions
+	    </a:documentation>
+	    <attribute name="version">
+		<value>1.0</value>
+	    </attribute>
+	    <optional>
+		<attribute name="author">
+		    <text />
+		</attribute>
+	    </optional>
+	    <oneOrMore>
+		<ref name="groupDef" />
+	    </oneOrMore>
+	    <oneOrMore>
+		<ref name="pcoreDef" />
+	    </oneOrMore>
+	</element>
+    </start>
+
+    <define name="pcoreDef">
+	<element name="pharmacophore">
+	    <optional><attribute name="description"><text /></attribute></optional>
+	    <optional><attribute name="name"><text /></attribute></optional>
+	    <zeroOrMore>
+		<ref name="groupDef" />
+	    </zeroOrMore>
+	    <interleave>
+		<oneOrMore>
+		    <ref name="distanceConstraintDef" />
+		</oneOrMore>  
+		<zeroOrMore>
+		    <ref name="angleConstraintDef" />
+		</zeroOrMore>
+	    </interleave>
+	</element>
+    </define>
+
+    <define name="groupDef"
+	    datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+	<element name="group">
+	    <a:documentation>
+		A SMARTS based representation of a pharmacophore group.
+		This element should have a label attribute, whose value is a string limited
+		to the alphanumeric characters. The label will be used to refer to the group
+		in the constraint definitions. The content of this element should be a valid
+		SMARTS pattern
+	    </a:documentation>
+	    <text />
+	    <attribute name="id">
+		<data type="ID" />
+	    </attribute>
+	    <optional>
+		<attribute name="description"><text /></attribute>
+	    </optional>
+	</element>
+    </define>
+
+    <define name="groupRefDef">
+	<element name="groupRef">
+	    <attribute name="id">
+		<data type="IDREF" />
+	    </attribute>
+	</element>
+    </define>
+
+    <define name="distanceConstraintDef" 
+	    datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+	<element name="distanceConstraint">
+	    <a:documentation>
+		This element represents a distance constraint between two pharmacophore
+		groups. The default unit is angstroms. Currently any distance value can
+		be supplied, though zero negative values are meaningless. By specifying just the
+		lower value the constraint is exact and by specifying both the lower nd 
+		upper values one gets a distance range. The constraint
+		is defined between two pharmacophore groups so the contents of this 
+		element should 2 groupRef elements with the appropriate ID's, which should have
+		been defined previously.
+	    </a:documentation>
+	    <attribute name="lower">
+		<data type="double" />
+	    </attribute>
+	    <optional>
+		<attribute name="upper">
+		    <data type="double" />
+		</attribute>
+	    </optional>
+	    <attribute name="units">
+		<ref name="distanceUnitsDef" />
+	    </attribute>
+	    <ref name="groupRefDef" />
+	    <ref name="groupRefDef" />
+	</element>
+    </define>
+
+    <define name="angleConstraintDef"
+	    datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+      <element name="angleConstraint">
+	<attribute name="lower">
+	  <data type="double" />
+	</attribute>
+	<optional>
+	  <attribute name="upper">
+	    <data type="double" />
+	  </attribute>
+	</optional>
+	<attribute name="units">
+	  <ref name="angleUnitsDef" />
+	</attribute>
+	<ref name="groupRefDef" />
+	<ref name="groupRefDef" />
+	<ref name="groupRefDef" />
+      </element>
+    </define>
+
+    <define name="dirConstraintDef"
+	    datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+      <element name="dirConstraint">
+	<a:documentation>
+	  This element represents a directional constraint. While multiple such 
+	  constraints are possible, the common feature is to specify a direction.
+	  The direction can be specified by providing a unit vector, starting from
+	  the origin in the desired direction. This is represents an exact constraint.
+	  The element also allows the constraint to be relaxed by supporting an 
+	  optional solid angle specification.
+	</a:documentation>
+	<ref name="groupRefDef" />
+      </element>
+    </define>
+    
+
+    <!-- A definition of unit symbols. I'm not sure whether this is the best 
+	 way to go about this, since the strings A, nm, pm are conventions -->
+    <define name="distanceUnitsDef">
+      <choice>
+	<value>A</value>
+	<value>nm</value>
+	<value>pm</value>
+      </choice>
+    </define>
+    <define name="angleUnitsDef">
+      <choice>
+	<value>radians</value>
+	<value>degrees</value>
+      </choice>
+    </define>
+
+    
+  </grammar>
