@@ -39,7 +39,7 @@ public class PharmacophoreSearch {
     private BufferedWriter report = null;
     private MDLV2000Writer writer;
     private PharmacophoreMatcher matcher;
-    private static final String PCORE_VERSION = "1.3";
+    private static final String PCORE_VERSION = "1.3.1";
 
     DecimalFormat formatter = new DecimalFormat("0.00");
 
@@ -147,7 +147,9 @@ public class PharmacophoreSearch {
                         Cycles.vertexShort());
                 aromaticity.apply(container);
             } catch (CDKException e) {
-                throw new CDKException("Error in aromaticity detection");
+                nskip++;
+                continue;
+//                throw new CDKException("Error in aromaticity detection");
             }
 
             boolean matched;
@@ -255,7 +257,9 @@ public class PharmacophoreSearch {
                         Cycles.vertexShort());
                 aromaticity.apply(tmp);
             } catch (CDKException e) {
-                throw new CDKException("Error in aromaticity detection");
+                nskip++;
+                continue;
+//                throw new CDKException("Error in aromaticity detection");
             }
 
             boolean firstTime = true;
@@ -366,7 +370,7 @@ public class PharmacophoreSearch {
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp("\njava -jar CDKPsearch.jar",
                     "Pharmacophore searching based on the CDK. The code currently handles distances and angle constraints. Pharmacophore queries can be provided in the form of XML definition files\n\n" +
-                            "Rajarshi Guha <rguha@indiana.edu>\n",
+                            "Rajarshi Guha <rajarshi.guha@gmail.com>\n",
                     options, "");
             System.exit(-1);
         }
