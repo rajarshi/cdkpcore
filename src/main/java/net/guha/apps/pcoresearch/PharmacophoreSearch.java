@@ -149,7 +149,6 @@ public class PharmacophoreSearch {
             } catch (CDKException e) {
                 nskip++;
                 continue;
-//                throw new CDKException("Error in aromaticity detection");
             }
 
             boolean matched;
@@ -259,7 +258,6 @@ public class PharmacophoreSearch {
             } catch (CDKException e) {
                 nskip++;
                 continue;
-//                throw new CDKException("Error in aromaticity detection");
             }
 
             boolean firstTime = true;
