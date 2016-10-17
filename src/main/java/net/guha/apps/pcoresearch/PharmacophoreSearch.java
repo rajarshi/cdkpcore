@@ -4,7 +4,6 @@ import org.apache.commons.cli.*;
 import org.openscience.cdk.CDK;
 import org.openscience.cdk.CDKConstants;
 import org.openscience.cdk.ConformerContainer;
-import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.aromaticity.Aromaticity;
 import org.openscience.cdk.aromaticity.ElectronDonation;
 import org.openscience.cdk.exception.CDKException;
@@ -13,10 +12,13 @@ import org.openscience.cdk.graph.Cycles;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
+import org.openscience.cdk.io.MDLV2000Reader;
 import org.openscience.cdk.io.MDLV2000Writer;
 import org.openscience.cdk.io.iterator.IteratingMDLConformerReader;
 import org.openscience.cdk.io.iterator.IteratingSDFReader;
 import org.openscience.cdk.pharmacophore.*;
+import org.openscience.cdk.silent.AtomContainer;
+import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.xml.sax.SAXException;
 
 import java.io.*;
@@ -39,7 +41,7 @@ public class PharmacophoreSearch {
     private BufferedWriter report = null;
     private MDLV2000Writer writer;
     private PharmacophoreMatcher matcher;
-    private static final String PCORE_VERSION = "1.3.1";
+    private static final String PCORE_VERSION = "1.3.2";
 
     DecimalFormat formatter = new DecimalFormat("0.00");
 
@@ -125,8 +127,10 @@ public class PharmacophoreSearch {
 
     public void doSingleSearch() throws IOException, CDKException {
         IteratingSDFReader reader = new IteratingSDFReader(
-                new FileReader(new File(ifilename)), DefaultChemObjectBuilder.getInstance()
+                new FileReader(new File(ifilename)), SilentChemObjectBuilder.getInstance()
         );
+
+        MDLV2000Reader mdlr = new MDLV2000Reader(new FileReader(new File(ifilename)));
 
         int nmol = 0;
         int nhit = 0;
@@ -134,19 +138,10 @@ public class PharmacophoreSearch {
 
         long timeStart = System.currentTimeMillis();
 
-        while (reader.hasNext()) {
-            IAtomContainer container = reader.next();
+        IAtomContainer container;
+        while ((container = mdlr.read(new AtomContainer(0,0,0,0))) != null) {
 
             if (!GeometryTools.has3DCoordinates(container)) {
-                nskip++;
-                continue;
-            }
-
-            try {
-                Aromaticity aromaticity = new Aromaticity(ElectronDonation.daylight(),
-                        Cycles.vertexShort());
-                aromaticity.apply(container);
-            } catch (CDKException e) {
                 nskip++;
                 continue;
             }
@@ -170,7 +165,7 @@ public class PharmacophoreSearch {
                 // loop over each of the matched
                 for (List<PharmacophoreAtom> match : matches) {
                     for (PharmacophoreAtom patom : match) {
-                        IAtom pseudoAtom = DefaultChemObjectBuilder.getInstance().newInstance(IAtom.class, "Xe");
+                        IAtom pseudoAtom = SilentChemObjectBuilder.getInstance().newInstance(IAtom.class, "Xe");
                         pseudoAtom.setPoint3d(patom.getPoint3d());
                         container.addAtom(pseudoAtom);
                     }
@@ -232,7 +227,7 @@ public class PharmacophoreSearch {
 
     public void doConfSearch() throws IOException, CDKException {
         IteratingMDLConformerReader reader = new IteratingMDLConformerReader(
-                new FileReader(new File(ifilename)), DefaultChemObjectBuilder.getInstance()
+                new FileReader(new File(ifilename)), SilentChemObjectBuilder.getInstance()
         );
 
 
@@ -243,6 +238,7 @@ public class PharmacophoreSearch {
         long timeStart = System.currentTimeMillis();
 
         ConformerContainer confContainer;
+        Aromaticity aromaticity = new Aromaticity(ElectronDonation.daylight(),  Cycles.vertexShort());
         while (reader.hasNext()) {
             confContainer = (ConformerContainer) reader.next();
 
@@ -252,8 +248,6 @@ public class PharmacophoreSearch {
             // other conformers in the container
             IAtomContainer tmp = confContainer.get(0);
             try {
-                Aromaticity aromaticity = new Aromaticity(ElectronDonation.daylight(),
-                        Cycles.vertexShort());
                 aromaticity.apply(tmp);
             } catch (CDKException e) {
                 nskip++;
@@ -283,7 +277,7 @@ public class PharmacophoreSearch {
                     List<List<PharmacophoreAtom>> matches = matcher.getUniqueMatchingPharmacophoreAtoms();
                     for (List<PharmacophoreAtom> match : matches) {
                         for (PharmacophoreAtom patom : match) {
-                            IAtom pseudoAtom = DefaultChemObjectBuilder.getInstance().newInstance(IAtom.class, "Xe");
+                            IAtom pseudoAtom = SilentChemObjectBuilder.getInstance().newInstance(IAtom.class, "Xe");
                             pseudoAtom.setPoint3d(patom.getPoint3d());
                             confClone.addAtom(pseudoAtom);
                         }

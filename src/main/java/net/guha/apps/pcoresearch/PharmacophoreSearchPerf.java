@@ -3,7 +3,7 @@ package net.guha.apps.pcoresearch;
 import org.apache.commons.cli.*;
 import org.openscience.cdk.CDKConstants;
 import org.openscience.cdk.ConformerContainer;
-import org.openscience.cdk.DefaultChemObjectBuilder;
+import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.aromaticity.Aromaticity;
 import org.openscience.cdk.aromaticity.ElectronDonation;
 import org.openscience.cdk.exception.CDKException;
@@ -141,7 +141,7 @@ public class PharmacophoreSearchPerf {
         if (performance) matchTimes = new ArrayList<Double>();
 
         IteratingSDFReader reader = new IteratingSDFReader(
-                new FileReader(new File(ifilename)), DefaultChemObjectBuilder.getInstance()
+                new FileReader(new File(ifilename)), SilentChemObjectBuilder.getInstance()
         );
 
         int nmol = 0;
@@ -149,7 +149,7 @@ public class PharmacophoreSearchPerf {
         int nskip = 0;
 
         long timeStart = System.currentTimeMillis();
-
+//        Aromaticity aromaticity = new Aromaticity(ElectronDonation.daylight(), Cycles.vertexShort());
         while (reader.hasNext()) {
             IAtomContainer container = reader.next();
 
@@ -158,13 +158,11 @@ public class PharmacophoreSearchPerf {
                 continue;
             }
 
-            try {
-                Aromaticity aromaticity = new Aromaticity(ElectronDonation.daylight(),
-                        Cycles.vertexShort());
-                aromaticity.apply(container);
-            } catch (CDKException e) {
-                throw new CDKException("Error in aromaticity detection");
-            }
+//            try {
+//                aromaticity.apply(container);
+//            } catch (CDKException e) {
+//                throw new CDKException("Error in aromaticity detection");
+//            }
 
             boolean matched;
             try {
@@ -192,7 +190,7 @@ public class PharmacophoreSearchPerf {
                 // loop over each of the matched
                 for (List<PharmacophoreAtom> match : matches) {
                     for (PharmacophoreAtom patom : match) {
-                        IAtom pseudoAtom = DefaultChemObjectBuilder.getInstance().newInstance(IAtom.class, "Xe");
+                        IAtom pseudoAtom = SilentChemObjectBuilder.getInstance().newInstance(IAtom.class, "Xe");
                         pseudoAtom.setPoint3d(patom.getPoint3d());
                         container.addAtom(pseudoAtom);
                     }
@@ -266,7 +264,7 @@ public class PharmacophoreSearchPerf {
         if (performance) matchTimes = new ArrayList<Double>();
 
         IteratingMDLConformerReader reader = new IteratingMDLConformerReader(
-                new FileReader(new File(ifilename)), DefaultChemObjectBuilder.getInstance()
+                new FileReader(new File(ifilename)), SilentChemObjectBuilder.getInstance()
         );
 
 
